@@ -5,8 +5,12 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" type="text/css" href="css/html5reset.css">
         <link rel="stylesheet" type="text/css" href="css/style.css">
+        <link rel="stylesheet" type="text/css" href="css/stats_style.css">
         <link href="https://fonts.googleapis.com/css?family=Palanquin+Dark:400,500" rel="stylesheet">
         <title>The Bechdel Test</title>
+
+        <!--Include D3.js-->
+        <script src="http://d3js.org/d3.v4.min.js" charset="utf-8"></script>
 
         <!-- Global site tag (gtag.js) - Google Analytics -->
         <script async src="https://www.googletagmanager.com/gtag/js?id=UA-149594584-1"></script>
@@ -31,11 +35,73 @@
                     <li class="selected"><a href="#">Statistics</a></li>
 					<li><a href="resources.html">Resources</a></li>
 				</ul>
-			</nav>
+            </nav>
         </main>
+
+        <svg width="800" height="800">
+
+        </svg>
+
+        <script>   
+            var svg = d3.select("svg"),
+                margin = 200,
+                width = svg.attr("width") - margin,
+                height = svg.attr("height") - margin;
+
+
+            var xScale = d3.scaleBand().range ([0, width]).padding(0.4),
+                yScale = d3.scaleLinear().range ([height, 0]);
+
+            var g = svg.append("g")
+                    .attr("transform", "translate(" + 100 + "," + 100 + ")");
+
+            d3.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/bechdel/movies.csv", function(error, data){
+                if (error) {
+                    throw error;
+                }
+                
+                console.log(data.length);
+                console.log(data[0])
+                xScale.domain(data.map(function(d) { if (d.year >= 2000 && d.year <= 2019) {return d.year;} return null }));
+                yScale.domain([0, d3.max(data, function(d) { return d.budget; })]);
+
+                g.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3.axisBottom(xScale));
+
+                g.append("g")
+                .call(d3.axisLeft(yScale).tickFormat(function(d){
+                    return "$" + d;
+                }).ticks(10))
+                .append("text")
+                .attr("y", 6)
+                .attr("dy", "0.71em")
+                .attr("text-anchor", "end")
+                .text("value");
+
+                g.selectAll(".bar")
+                .data(data)
+                .enter().append("rect")
+                .attr("class", "bar")
+                .attr("x", function(d) { return xScale(d.year); })
+                .attr("y", function(d) { return yScale(d.budget); })
+                .attr("width", xScale.bandwidth())
+                .attr("height", function(d) { return height - yScale(d.budget); });
+
+                d3.select("g").style("stroke", "white")
+                d3.selectAll("line").style("stroke", "white")
+                d3.selectAll("path").style("stroke", "white")
+
+                // for (var i = 0; i < data.length; i++) {
+                //     console.log(data[i].title);
+                //     console.log(data[i].year);
+                //     console.log(data[i].binary);
+                // }
+            });
+        </script>
+
         <footer>
             <p>Mariah Jacobs - 2019</p>
         </footer>
     </body>
-
 </html>
