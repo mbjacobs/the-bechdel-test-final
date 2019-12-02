@@ -36,32 +36,154 @@
 					<li><a href="resources.html">Resources</a></li>
 				</ul>
             </nav>
+
+            <section>
+                <!-- Tab links -->
+                <div class="tab">
+                    <button class="tablinks" onclick="openGraph(event, 'Test')" id="defaultOpen">Bechdel Test Rates</button>
+                    <button class="tablinks" onclick="openGraph(event, 'Budgets')">Budgets</button>
+                    <button class="tablinks" onclick="openGraph(event, 'GrossIncomes')">Gross Incomes</button>
+                </div>
+
+                <!-- Tab content -->
+                <div id="Test" class="tabcontent">
+                    <h3>Pass vs. Fail Rates</h3>
+                    <div class="graph-container">
+                        <svg width="500" height="500" id="test-svg"></svg>
+                        <div class="key">
+                            <h4>Key</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="Budgets" class="tabcontent">
+                    <h3>Budgets</h3>
+                    <div class="graph-container">
+                            <svg width="500" height="500" id="budget-svg"></svg>
+                            <div class="key">
+                                <h4>Key</h4>
+                            </div>
+                        </div>                </div>
+
+                <div id="GrossIncomes" class="tabcontent">
+                    <h3>Gross Incomes</h3>
+                    <div class="graph-container">
+                            <svg width="500" height="500" id="income-svg"></svg>
+                            <div class="key">
+                                <h4>Key</h4>
+                            </div>
+                        </div>                </div>
+            </section>
         </main>
 
-        <svg width="800" height="800">
-
-        </svg>
-
         <script>   
-            var svg = d3.select("svg"),
-                margin = 200,
-                width = svg.attr("width") - margin,
-                height = svg.attr("height") - margin;
+           d3.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/bechdel/movies.csv", function(error, data){
+                if (error) {
+                    throw error;
+                }
 
+                console.log(data.length);
+                console.log(data[0])
+
+                binary_data = []
+                fail_count = 0
+                pass_count = 0
+
+                for (let i = 0; i < data.length; i++){
+                    binary_data.push(data[i].binary)
+                    if (data[i].binary ==  "PASS") {
+                        pass_count++
+                    }
+                    else {
+                        fail_count++
+                    }
+                }
+                console.log(pass_count, fail_count)
+
+                //Create a Pass vs. Fail pie chart
+                var test_svg = d3.select("#test-svg"),
+                    width = test_svg.attr("width"),
+                    height = test_svg.attr("height"),
+                    radius = Math.min(width, height) / 2,
+                    g = test_svg.append("g").attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+                var color = d3.scaleOrdinal(['green','red']);
+
+                // Generate the pie
+                var pie = d3.pie();
+
+                // Generate the arcs
+                var arc = d3.arc()
+                    .innerRadius(0)
+                    .outerRadius(radius);
+
+                //Calculate the pie percentages
+                var pie_data = []
+                pie_data.push(pass_count)
+                pie_data.push(fail_count)
+
+                console.log("Pie data", pie_data)
+
+                //Generate groups
+                var arcs = g.selectAll("arc")
+                            .data(pie(pie_data))
+                            .enter()
+                            .append("g")
+                            .attr("class", "arc")
+                            .on("mouseover", onMouseOver) //Add listener for the mouseover event
+                            .on("mouseout", onMouseOut)   //Add listener for the mouseout event
+
+                //Draw arc paths
+                arcs.append("path")
+                    .attr("fill", function(d, i) {
+                        return color(i);
+                    })
+                    .attr("d", arc);
+
+                //mouseover event handler function
+                function onMouseOver(d, i) {
+                    d3.select(this).attr('class', 'highlight');
+                    d3.select(this)
+                    .transition()     // adds animation
+                    .duration(400)
+
+                    g.append("text")
+                    .attr('class', 'arc') 
+                    .text(function() {
+                        return [Math.round((d.value / data.length) * 100) + "%"];  // Value of the text
+                    });
+                }
+
+                //mouseout event handler function
+                function onMouseOut(d, i) {
+                    // use the text label class to remove label on mouseout
+                    d3.select(this).attr('class', 'arc');
+                    d3.select(this)
+                    .transition()     // adds animation
+                    .duration(400)
+                    d3.select(this).attr('class', 'arc').text().remove()
+                }
+            });
+        </script>
+
+        <script>
+            d3.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/bechdel/movies.csv", function(error, data){
+            if (error) {
+                throw error;
+            }
+
+            //Create a Budget bar graph.
+            var budget_svg = d3.select("#budget-svg"),
+                margin = 200,
+                width = budget_svg.attr("width") - margin,
+                height = budget_svg.attr("height") - margin;
 
             var xScale = d3.scaleBand().range ([0, width]).padding(0.4),
                 yScale = d3.scaleLinear().range ([height, 0]);
 
-            var g = svg.append("g")
+            var g = budget_svg.append("g")
                     .attr("transform", "translate(" + 100 + "," + 100 + ")");
 
-            d3.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/bechdel/movies.csv", function(error, data){
-                if (error) {
-                    throw error;
-                }
-                
-                console.log(data.length);
-                console.log(data[0])
                 xScale.domain(data.map(function(d) { if (d.year >= 2000 && d.year <= 2019) {return d.year;} return null }));
                 yScale.domain([0, d3.max(data, function(d) { return d.budget; })]);
 
@@ -87,17 +209,42 @@
                 .attr("y", function(d) { return yScale(d.budget); })
                 .attr("width", xScale.bandwidth())
                 .attr("height", function(d) { return height - yScale(d.budget); });
+                //.style ("color", ) change color of bar based on whether or not it passes the test
 
+                //Apply styling
                 d3.select("g").style("stroke", "white")
                 d3.selectAll("line").style("stroke", "white")
                 d3.selectAll("path").style("stroke", "white")
 
-                // for (var i = 0; i < data.length; i++) {
-                //     console.log(data[i].title);
-                //     console.log(data[i].year);
-                //     console.log(data[i].binary);
-                // }
+                for (var i = 0; i < data.length; i++) {
+                    console.log(data[i].title);
+                    console.log(data[i].year);
+                    console.log(data[i].binary);
+                }
             });
+        </script>
+
+        <script>
+            function openGraph(evt, graphName) {
+            // Declare all variables
+            var i, tabcontent, tablinks;
+
+            // Get all elements with class="tabcontent" and hide them
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+
+            // Get all elements with class="tablinks" and remove the class "active"
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+
+            // Show the current tab, and add an "active" class to the button that opened the tab
+            document.getElementById(graphName).style.display = "block";
+            evt.currentTarget.className += " active";
+            }
         </script>
 
         <footer>
