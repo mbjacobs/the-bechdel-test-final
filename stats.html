@@ -38,11 +38,13 @@
             </nav>
 
             <section>
+                <!--Tabs code adapted from: https://www.w3schools.com/howto/howto_js_tabs.asp -->
+
                 <!-- Tab links -->
                 <div class="tab">
-                    <button class="tablinks" onclick="openGraph(event, 'Test')" id="defaultOpen">Bechdel Test Rates</button>
-                    <button class="tablinks" onclick="openGraph(event, 'Budgets')">Budgets</button>
-                    <button class="tablinks" onclick="openGraph(event, 'GrossIncomes')">Gross Incomes</button>
+                    <button class="tablinks" onclick="openTab(event, 'Test')" id="defaultOpen">Bechdel Test Rates</button>
+                    <button class="tablinks" onclick="openTab(event, 'Budgets')">Budgets</button>
+                    <button class="tablinks" onclick="openTab(event, 'GrossIncomes')">Gross Incomes</button>
                 </div>
 
                 <!-- Tab content -->
@@ -50,8 +52,8 @@
                     <h3>Pass vs. Fail Rates</h3>
                     <div class="graph-container">
                         <svg width="500" height="500" id="test-svg"></svg>
-                        <div class="key">
-                            <h4>Key</h4>
+                        <div class="legend-container">
+                            <h4>Legend</h4>
                         </div>
                     </div>
                 </div>
@@ -59,31 +61,53 @@
                 <div id="Budgets" class="tabcontent">
                     <h3>Budgets</h3>
                     <div class="graph-container">
-                            <svg width="500" height="500" id="budget-svg"></svg>
-                            <div class="key">
-                                <h4>Key</h4>
-                            </div>
-                        </div>                </div>
+                        <svg width="500" height="500" id="budget-svg"></svg>
+                        <div class="legend-container">
+                            <h4>Legend</h4>
+                        </div>
+                    </div>
+                </div>
 
                 <div id="GrossIncomes" class="tabcontent">
                     <h3>Gross Incomes</h3>
                     <div class="graph-container">
-                            <svg width="500" height="500" id="income-svg"></svg>
-                            <div class="key">
-                                <h4>Key</h4>
-                            </div>
-                        </div>                </div>
+                        <svg width="500" height="500" id="income-svg"></svg>
+                        <div class="legend-container">
+                            <h4>Legend</h4>
+                        </div>
+                    </div>
+                </div>
             </section>
         </main>
+
+        <script>
+            function openTab(evt, tabName) {
+            // Declare all variables
+            var i, tabcontent, tablinks;
+
+            // Get all elements with class="tabcontent" and hide them
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+
+            // Get all elements with class="tablinks" and remove the class "active"
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+
+            // Show the current tab, and add an "active" class to the button that opened the tab
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+            }
+        </script>
 
         <script>   
            d3.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/bechdel/movies.csv", function(error, data){
                 if (error) {
                     throw error;
                 }
-
-                console.log(data.length);
-                console.log(data[0])
 
                 binary_data = []
                 fail_count = 0
@@ -98,9 +122,8 @@
                         fail_count++
                     }
                 }
-                console.log(pass_count, fail_count)
 
-                //Create a Pass vs. Fail pie chart
+                //Create pie chart
                 var test_svg = d3.select("#test-svg"),
                     width = test_svg.attr("width"),
                     height = test_svg.attr("height"),
@@ -122,16 +145,14 @@
                 pie_data.push(pass_count)
                 pie_data.push(fail_count)
 
-                console.log("Pie data", pie_data)
-
                 //Generate groups
                 var arcs = g.selectAll("arc")
-                            .data(pie(pie_data))
-                            .enter()
-                            .append("g")
-                            .attr("class", "arc")
-                            .on("mouseover", onMouseOver) //Add listener for the mouseover event
-                            .on("mouseout", onMouseOut)   //Add listener for the mouseout event
+                    .data(pie(pie_data))
+                    .enter()
+                    .append("g")
+                    .attr("class", "arc")
+                    .on("mouseover", onMouseOver) //Add listener for the mouseover event
+                    .on("mouseout", onMouseOut)   //Add listener for the mouseout event
 
                 //Draw arc paths
                 arcs.append("path")
@@ -139,6 +160,39 @@
                         return color(i);
                     })
                     .attr("d", arc);
+
+                //Draw legend
+                legend = test_svg.append("g")
+                .attr("class","legend")
+                .attr("transform","translate(50,30)")
+                .style("font-size","12px")
+                .call(d3.legend)
+                // var legend = test_svg.select('.legend-container') //the legend and placement
+                //     .data(color.domain())
+                //     .enter()
+                //     .append('g')
+                //     .call(d3.legend);
+
+                    // .attr('class', 'pie-legend')
+                    // .attr('transform', function (d, i) {
+                    //     var height = legendRectSize + legendSpacing;
+                    //     var offset = height * color.domain().length / 2;
+                    //     var horz = -2 * legendRectSize - 13;
+                    //     var vert = i * height - offset;
+                    //     return 'translate(' + horz + ',' + vert + ')';
+                    // });
+                    // legend.append('pie') //keys
+                    // .style('fill', color)
+                    // .style('stroke', color)
+                    // .attr('cx', 0)
+                    // .attr('cy', 0)
+                    // .attr('r', '.5rem');
+                    // legend.append('text') //labels
+                    // .attr('x', legendRectSize + legendSpacing)
+                    // .attr('y', legendRectSize - legendSpacing)
+                    // .text(function (d) {
+                    //     return d;
+                    // });
 
                 //mouseover event handler function
                 function onMouseOver(d, i) {
@@ -215,36 +269,7 @@
                 d3.select("g").style("stroke", "white")
                 d3.selectAll("line").style("stroke", "white")
                 d3.selectAll("path").style("stroke", "white")
-
-                for (var i = 0; i < data.length; i++) {
-                    console.log(data[i].title);
-                    console.log(data[i].year);
-                    console.log(data[i].binary);
-                }
             });
-        </script>
-
-        <script>
-            function openGraph(evt, graphName) {
-            // Declare all variables
-            var i, tabcontent, tablinks;
-
-            // Get all elements with class="tabcontent" and hide them
-            tabcontent = document.getElementsByClassName("tabcontent");
-            for (i = 0; i < tabcontent.length; i++) {
-                tabcontent[i].style.display = "none";
-            }
-
-            // Get all elements with class="tablinks" and remove the class "active"
-            tablinks = document.getElementsByClassName("tablinks");
-            for (i = 0; i < tablinks.length; i++) {
-                tablinks[i].className = tablinks[i].className.replace(" active", "");
-            }
-
-            // Show the current tab, and add an "active" class to the button that opened the tab
-            document.getElementById(graphName).style.display = "block";
-            evt.currentTarget.className += " active";
-            }
         </script>
 
         <footer>

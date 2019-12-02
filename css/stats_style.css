@@ -10,9 +10,11 @@ svg {
     margin: 2%;
 }
 
-g {
+.g {
     /* background: white; */
 }
+
+/*Tabs styling adapted from: https://www.w3schools.com/howto/howto_js_tabs.asp*/
 
 /* Style the tab */
 .tab {
@@ -60,7 +62,7 @@ g {
       flex-direction: row;
   }
 
-  .key {
+  .legend-container {
       margin: 2% 5% 5% 0;
       padding: 2%;
       width: 40%;
