@@ -2,16 +2,6 @@ svg {
     width: 450;
     height: 450;
     margin: 2%;
-    flex-grow: 3;
-}
-
-.bar {
-    fill: grey;
-    margin: 2%;
-}
-
-.g {
-    /* background: white; */
 }
 
 /*Tabs styling adapted from: https://www.w3schools.com/howto/howto_js_tabs.asp*/
