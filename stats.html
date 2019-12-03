@@ -113,46 +113,45 @@
                 fail_count = 0
                 pass_count = 0
 
+                //Sum total passes and failures for pie chart percentages.
                 for (let i = 0; i < data.length; i++){
                     binary_data.push(data[i].binary)
-                    if (data[i].binary ==  "PASS") {
-                        pass_count++
-                    }
-                    else {
-                        fail_count++
-                    }
+                    if (data[i].binary ==  "PASS") { pass_count++ }
+                    else { fail_count++ }
                 }
 
                 //Create pie chart
                 var test_svg = d3.select("#test-svg"),
                     width = test_svg.attr("width"),
                     height = test_svg.attr("height"),
-                    radius = Math.min(width, height) / 2,
+                    margin = test_svg.attr("margin"),
+                    radius = Math.min(width, height) / 2 - margin,
                     g = test_svg.append("g").attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
+                //Set color scale
                 var color = d3.scaleOrdinal(['green','red']);
 
-                // Generate the pie
-                var pie = d3.pie();
+                //Calculate the pie percentages
+                var test_data = {Pass: pass_count, Fail: fail_count}
 
-                // Generate the arcs
+                //Generate the pie
+                var pie = d3.pie()
+                            .value(function (d) {return d.value;})
+                var pie_data = pie(d3.entries(test_data))
+
+                //Generate arcs
                 var arc = d3.arc()
                     .innerRadius(0)
                     .outerRadius(radius);
 
-                //Calculate the pie percentages
-                var pie_data = []
-                pie_data.push(pass_count)
-                pie_data.push(fail_count)
-
-                //Generate groups
+                //Generate sections of pie
                 var arcs = g.selectAll("arc")
-                    .data(pie(pie_data))
+                    .data(pie_data)
                     .enter()
                     .append("g")
                     .attr("class", "arc")
-                    .on("mouseover", onMouseOver) //Add listener for the mouseover event
-                    .on("mouseout", onMouseOut)   //Add listener for the mouseout event
+                    // .on("mouseover", onMouseOver) //Add listener for the mouseover event
+                    // .on("mouseout", onMouseOut)   //Add listener for the mouseout event
 
                 //Draw arc paths
                 arcs.append("path")
@@ -161,62 +160,48 @@
                     })
                     .attr("d", arc);
 
-                //Draw legend
-                legend = test_svg.append("g")
-                .attr("class","legend")
-                .attr("transform","translate(50,30)")
-                .style("font-size","12px")
-                .call(d3.legend)
-                // var legend = test_svg.select('.legend-container') //the legend and placement
-                //     .data(color.domain())
-                //     .enter()
-                //     .append('g')
-                //     .call(d3.legend);
+                //Add labels
+                arcs.append('text')
+                .text(function(d){return d.data.key + ": " + Math.round((d.data.value / data.length) * 100) + "%"})
+                .attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")";  })
+                .style("text-anchor", "middle")
+                .style("font-size", 20)
 
-                    // .attr('class', 'pie-legend')
-                    // .attr('transform', function (d, i) {
-                    //     var height = legendRectSize + legendSpacing;
-                    //     var offset = height * color.domain().length / 2;
-                    //     var horz = -2 * legendRectSize - 13;
-                    //     var vert = i * height - offset;
-                    //     return 'translate(' + horz + ',' + vert + ')';
-                    // });
-                    // legend.append('pie') //keys
-                    // .style('fill', color)
-                    // .style('stroke', color)
-                    // .attr('cx', 0)
-                    // .attr('cy', 0)
-                    // .attr('r', '.5rem');
-                    // legend.append('text') //labels
-                    // .attr('x', legendRectSize + legendSpacing)
-                    // .attr('y', legendRectSize - legendSpacing)
-                    // .text(function (d) {
-                    //     return d;
-                    // });
+                // //mouseover event handler function
+                // function onMouseOver(d, i) {
+                //     console.log(this)
 
-                //mouseover event handler function
-                function onMouseOver(d, i) {
-                    d3.select(this).attr('class', 'highlight');
-                    d3.select(this)
-                    .transition()     // adds animation
-                    .duration(400)
+                //     d3.select(this).attr('class', 'highlight');
+                //     d3.select(this)
+                //     .transition()     // adds animation
+                //     .duration(400)
 
-                    g.append("text")
-                    .attr('class', 'arc') 
-                    .text(function() {
-                        return [Math.round((d.value / data.length) * 100) + "%"];  // Value of the text
-                    });
-                }
+                //     d3.select(this).attr('class', 'highlight')
+                //     .append("text")
+                //     .text(function(d){return d.data.key + ": " + Math.round((d.data.value / data.length) * 100) + "%"})
+                //     .attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")";  })
+                //     .style("text-anchor", "middle")
+                //     .style("font-size", 20)
 
-                //mouseout event handler function
-                function onMouseOut(d, i) {
-                    // use the text label class to remove label on mouseout
-                    d3.select(this).attr('class', 'arc');
-                    d3.select(this)
-                    .transition()     // adds animation
-                    .duration(400)
-                    d3.select(this).attr('class', 'arc').text().remove()
-                }
+                //     // g.append("text")
+                //     // .attr('class', 'arc')
+                //     // .attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")";  })
+                //     // .style("text-anchor", "middle")
+                //     // .style("font-size", 17) 
+                //     // .text(function() {
+                //     //     return [d.key + ":" + Math.round((d.value / data.length) * 100) + "%"];  // Value of the text
+                //     // });
+                // }
+
+                // //mouseout event handler function
+                // function onMouseOut(d, i) {
+                //     // use the text label class to remove label on mouseout
+                //     d3.select(this).attr('class', 'arc');
+                //     d3.select(this)
+                //     .transition()     // adds animation
+                //     .duration(400)
+                //     d3.select(this).attr('class', 'highlight').text("")
+                // }
             });
         </script>
 
