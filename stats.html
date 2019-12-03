@@ -29,7 +29,7 @@
 			<h1><a href="#">THE BECHDEL TEST</a></h1>
 			<nav>
 				<ul>
-					<li><a href="#">About the Test</a></li>
+					<li><a href="index.html">About the Test</a></li>
 					<li><a href="movies.html">Movies</a></li>
                     <li><a href="books.html">Books</a></li>
                     <li class="selected"><a href="#">Statistics</a></li>
@@ -234,7 +234,7 @@
                         .attr("transform", "translate(-10,0)rotate(-45)")
                         .style("text-anchor", "end");
 
-            // Add Y axis
+            //Create scale for Y axis and append it to the left side of the graph
             var y = d3.scaleLinear()
                 .domain([0, 300000000])
                 .range([ height, 0]);
@@ -255,6 +255,26 @@
                     if (d.binary == "PASS") {return "green"}
                     else if (d.binary == "FAIL") {return "red"}
                 })
+
+            //Generate explanation of chart
+            d3.select("#Budgets").select(".desc-container")
+                .append("p")
+                .text("This scatter plot charts the total budget in USD for each movie as a data point, where the movie is plotted according to its release year.")
+                .style("padding", "5%")
+
+                .append("p")
+                .text("From 1970-2013, movie budgets have increased exponentially for both movies that pass the Bechdel test and movies that don't." )
+                .style("padding-top", "5%")
+
+                .append("p")
+                .text("Movies with a passing Bechdel score are represented by green data points, while movies with a failing score are " + 
+                "represented by red data points." )
+                .style("padding-top", "5%")
+
+                .append("p")
+                .text("Generally, there are slightly more red data points plotted at the higher dollar values, suggesting that, based on the movies in this " +
+                "data set, the movies with failing Bechdel scores are more likely to have higher budgets." )
+                .style("padding-top", "5%")
             });
         </script>
 
@@ -322,6 +342,27 @@
                     if (d.binary == "PASS") {return "green"}
                     else if (d.binary == "FAIL") {return "red"}
                 })
+
+            //Generate explanation of chart
+            d3.select("#GrossIncomes").select(".desc-container")
+            .append("p")
+            .text("This scatter plot charts the gross domestic income in USD for each movie as a data point, where the movie is plotted according to its release year.")
+            .style("padding", "5%")
+
+            .append("p")
+            .text("From 1970-2013, gross domestic income has increased for both movies that pass the Bechdel test and movies that don't." )
+            .style("padding-top", "5%")
+
+            .append("p")
+            .text("Movies with a passing Bechdel score are represented by green data points, while movies with a failing score are " + 
+            "represented by red data points." )
+            .style("padding-top", "5%")
+
+            .append("p")
+            .text("From 2003-2013, there were slightly more green data points plotted at the higher dollar values, suggesting that, based on the movies in this " +
+            "data set, the movies with passing Bechdel scores are equally--if not more--successful in the box office than movies with failing Bechdel scores, " +
+            "based on gross domestic income.")
+            .style("padding-top", "5%")
             });
 
         </script>
