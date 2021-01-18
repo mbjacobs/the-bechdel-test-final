@@ -1,3 +1,3 @@
-# the-bechdel-test
-# SI 539 Portfolio
-# Final Project with D3.js
+# The Bechdel Test
+ 
+ View the live site [here](https://mbjacobs.github.io/the-bechdel-test-final/).
